@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.4</TargetFramework>
+    <Authors>Daniel Kienböck</Authors>
+    <Company />
+    <Description />
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Copyright>Daniel Kienböck 2017</Copyright>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/starkeeny/System.Linq.LevenshteinDistance/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/starkeeny/System.Linq.LevenshteinDistance</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/starkeeny/System.Linq.LevenshteinDistance.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>linq extension levenshtein string tolerance distance edit-distance</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>bin\Debug\netstandard1.4\System.Linq.LevenshteinDistance.xml</DocumentationFile>
+  </PropertyGroup>
+
+</Project>
