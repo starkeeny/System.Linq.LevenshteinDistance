@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -77,17 +78,33 @@ namespace System.Linq.LevenshteinDistance
     /// <summary>
     /// Objects of this class will be returned as a result of the group by clause.
     /// </summary>
-    public class LevenshteinDistanceGroupByResult
+    public class LevenshteinDistanceGroupByResult<TElement> : IGrouping<string, TElement>
     {
         /// <summary>
-        /// The source of the comparison.
+        /// Ruft den Schlüssel von <see cref="T:System.Linq.IGrouping`2" /> ab.
         /// </summary>
-        public string Item { get; internal set; }
+        public string Key { get; }
 
         /// <summary>
-        /// Items which are grouped below the <see cref="Item"/>
+        /// Items which are grouped below the <see cref="Key"/>
         /// </summary>
-        public IEnumerable<string> Items { get; internal set; }
+        public IEnumerable<TElement> Items { get; internal set; }
+
+        public LevenshteinDistanceGroupByResult(string key, IEnumerable<TElement> items)
+        {
+            this.Key = key;
+            this.Items = items;
+        }
+
+        public IEnumerator<TElement> GetEnumerator()
+        {
+            return ((IEnumerable<TElement>)Items).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)Items).GetEnumerator();
+        }
     }
 
     /// <summary>
@@ -95,6 +112,45 @@ namespace System.Linq.LevenshteinDistance
     /// </summary>
     public static class LevenshteinDistanceLinqExtension
     {
+        public static IEnumerable<IGrouping<string, TSource>> GroupBy<TSource>(
+            this IEnumerable<TSource> source, 
+            LevenshteinDistanceOptions options)
+        {
+            return LevenshteinDistanceLinqExtension.GroupBy<TSource, TSource,IGrouping <string, TSource>>(
+                source: source, 
+                options: options, 
+                keySelector: x => x.ToString(), 
+                elementSelector: x => x, 
+                resultSelector: (key, elements) => new LevenshteinDistanceGroupByResult<TSource>(key, elements));
+        }
+
+        public static IEnumerable<IGrouping<string, TSource>> GroupBy<TSource>(
+            this IEnumerable<TSource> source, 
+            LevenshteinDistanceOptions options, 
+            Func<TSource, string> keySelector)
+        {
+            return LevenshteinDistanceLinqExtension.GroupBy<TSource, TSource, IGrouping<string, TSource>>(
+                source: source,
+                options: options,
+                keySelector: keySelector,
+                elementSelector: x => x,
+                resultSelector: (key, elements) => new LevenshteinDistanceGroupByResult<TSource>(key, elements));
+        }
+
+        public static IEnumerable<IGrouping<string, TElement>> GroupBy<TSource, TElement>(
+            this IEnumerable<TSource> source,
+            LevenshteinDistanceOptions options,
+            Func<TSource, string> keySelector,
+            Func<TSource, TElement> elementSelector)
+        {
+            return LevenshteinDistanceLinqExtension.GroupBy<TSource, TElement, IGrouping<string, TElement>>(
+                source: source,
+                options: options,
+                keySelector: keySelector,
+                elementSelector: elementSelector,
+                resultSelector: (key, elements) => new LevenshteinDistanceGroupByResult<TElement>(key, elements));
+        }
+
         /// <summary>
         /// Groups the elements of a string sequence similar to the already existing GroupBy functions in linq
         /// but here you can configure a tolerance which is measured in Levenshtein Distance (LD). For additional
@@ -114,26 +170,34 @@ namespace System.Linq.LevenshteinDistance
         /// </summary>
         /// <param name="source">The list to group.</param>
         /// <param name="options">The grouping-options.</param>
+        /// <param name="keySelector">Function to extract a key.</param>
+        /// <param name="elementSelector"></param>
         /// <returns></returns>
-        public static IEnumerable<LevenshteinDistanceGroupByResult> GroupBy<T>(this IEnumerable<T> source, LevenshteinDistanceOptions options)
+        public static IEnumerable<TResult> GroupBy<TSource, TElement, TResult>(
+            this IEnumerable<TSource> source, 
+            LevenshteinDistanceOptions options, 
+            Func<TSource, string> keySelector, 
+            Func<TSource, TElement> elementSelector, 
+            Func<string, IEnumerable<TElement>, TResult> resultSelector)
         {
-            var store = new Dictionary<string, List<string>>();
+            var store = new Dictionary<string, List<TElement>>();
             var keys = new List<string>();
 
-            foreach (string rawItem in source.Select(x => x.ToString()).OrderBy(x => x))
+            // create tuples, to before to be able to sort... 
+            foreach (Tuple<string, TElement> rawItem in source.Select(x => Tuple.Create(keySelector(x), elementSelector(x))).OrderBy(x => x.Item1))
             {
-                string item = RemoveDigits(RemoveGuid(rawItem, options.RemoveStandardFormattedGuid), options.RemoveAllDigits);
+                string key = rawItem.Item1.RemoveGuid(options.RemoveStandardFormattedGuid).RemoveDigits(options.RemoveAllDigits);
 
                 bool matchingGroupKeyFound = false;
                 foreach (var groupKey in keys)
                 {
                     int distanceAllowed = options.Unit == LevenshteinDistanceUnit.Absolute
                         ? options.Distance
-                        : (int)((double)Math.Max(item.Length, groupKey.Length) * (double)options.Distance / 100.00);
+                        : (int)((double)Math.Max(key.Length, groupKey.Length) * (double)options.Distance / 100.00);
 
-                    if (matchingGroupKeyFound = (IsLDInRange(item, groupKey, distanceAllowed)))
+                    if (matchingGroupKeyFound = (IsLDInRange(key, groupKey, distanceAllowed)))
                     {
-                        store[groupKey].Add(item);
+                        store[groupKey].Add(rawItem.Item2);
                         break;
                     }
                 }
@@ -142,12 +206,14 @@ namespace System.Linq.LevenshteinDistance
                 {
                     // add in revert order, because this makes ways shorter if 
                     // the distance is not already in the first place.
-                    keys.Insert(0, item);
-                    store.Add(item, new List<string>() { item });
+                    keys.Insert(0, key);
+                    store.Add(key, new List<TElement>() { rawItem.Item2 });
                 }
             }
 
-            return store.Select(x => new LevenshteinDistanceGroupByResult() { Item = x.Key, Items = x.Value });
+            return store
+                .Select(x => new LevenshteinDistanceGroupByResult<TElement>(x.Key, x.Value))
+                .Select(x => resultSelector(x.Key, x.Items));
         }
 
         /// <summary>
@@ -156,7 +222,7 @@ namespace System.Linq.LevenshteinDistance
         /// <param name="text">Text to replace in.</param>
         /// <param name="shouldRemoveDigits">Is function activated.</param>
         /// <returns>Replaced text if activated or original string.</returns>
-        private static string RemoveDigits(string text, bool shouldRemoveDigits)
+        private static string RemoveDigits(this string text, bool shouldRemoveDigits)
         {
             if (!shouldRemoveDigits) return text;
 
@@ -170,7 +236,7 @@ namespace System.Linq.LevenshteinDistance
         /// <param name="text">Text to replace in.</param>
         /// <param name="shouldRemoveGuid">Is function activated.</param>
         /// <returns>Replaced text if activated or original string.</returns>
-        private static string RemoveGuid(string text, bool shouldRemoveGuid)
+        private static string RemoveGuid(this string text, bool shouldRemoveGuid)
         {
             if (!shouldRemoveGuid) return text;
 

@@ -46,10 +46,10 @@ namespace System.Linq.LevenshteinDistance.Tests
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(distance: 0));
 
             Assert.AreEqual(1, data.Count());
-            Assert.AreEqual("a", data.ToList().First().Item);
-            Assert.AreEqual(2, data.ToList().First().Items.Count());
-            Assert.AreEqual("a", data.ToList().First().Items.Skip(0).First());
-            Assert.AreEqual("a", data.ToList().First().Items.Skip(1).First());
+            Assert.AreEqual("a", data.ToList().First().Key);
+            Assert.AreEqual(2, data.ToList().First().ToList().Count());
+            Assert.AreEqual("a", data.ToList().First().ToList().Skip(0).First());
+            Assert.AreEqual("a", data.ToList().First().ToList().Skip(1).First());
         }
 
         [TestMethod]
@@ -60,10 +60,10 @@ namespace System.Linq.LevenshteinDistance.Tests
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(unit: LevenshteinDistanceUnit.Absolute, distance: 1));
 
             Assert.AreEqual(1, data.Count());
-            Assert.AreEqual("a", data.ToList().First().Item);
-            Assert.AreEqual(2, data.ToList().First().Items.Count());
-            Assert.AreEqual("a", data.ToList().First().Items.Skip(0).First());
-            Assert.AreEqual("b", data.ToList().First().Items.Skip(1).First());
+            Assert.AreEqual("a", data.ToList().First().Key);
+            Assert.AreEqual(2, data.ToList().First().ToList().Count());
+            Assert.AreEqual("a", data.ToList().First().ToList().Skip(0).First());
+            Assert.AreEqual("b", data.ToList().First().ToList().Skip(1).First());
         }
 
         [TestMethod]
@@ -74,10 +74,10 @@ namespace System.Linq.LevenshteinDistance.Tests
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(distance: 1));
 
             Assert.AreEqual(1, data.Count());
-            Assert.AreEqual("a", data.ToList().First().Item);
-            Assert.AreEqual(2, data.ToList().First().Items.Count());
-            Assert.AreEqual("a", data.ToList().First().Items.Skip(0).First());
-            Assert.AreEqual("b", data.ToList().First().Items.Skip(1).First());
+            Assert.AreEqual("a", data.ToList().First().Key);
+            Assert.AreEqual(2, data.ToList().First().ToList().Count());
+            Assert.AreEqual("a", data.ToList().First().ToList().Skip(0).First());
+            Assert.AreEqual("b", data.ToList().First().ToList().Skip(1).First());
         }
 
         [TestMethod]
@@ -88,10 +88,10 @@ namespace System.Linq.LevenshteinDistance.Tests
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(unit: LevenshteinDistanceUnit.Percentage, distance: 25));
 
             Assert.AreEqual(1, data.Count());
-            Assert.AreEqual("aaaa", data.ToList().First().Item);
-            Assert.AreEqual(2, data.ToList().First().Items.Count());
-            Assert.AreEqual("aaaa", data.ToList().First().Items.Skip(0).First());
-            Assert.AreEqual("aaab", data.ToList().First().Items.Skip(1).First());
+            Assert.AreEqual("aaaa", data.ToList().First().Key);
+            Assert.AreEqual(2, data.ToList().First().ToList().Count());
+            Assert.AreEqual("aaaa", data.ToList().First().ToList().Skip(0).First());
+            Assert.AreEqual("aaab", data.ToList().First().ToList().Skip(1).First());
         }
 
         [TestMethod]
@@ -106,7 +106,7 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(2));
             Assert.AreEqual(1, data.Count());
-            Assert.AreEqual(4, data.First().Items.Count());
+            Assert.AreEqual(4, data.First().ToList().Count());
         }
 
         [TestMethod]
@@ -124,8 +124,8 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(2));
             Assert.AreEqual(2, data.Count());
-            Assert.AreEqual(4, data.First(x => x.Item.StartsWith("timeout")).Items.Count());
-            Assert.AreEqual(3, data.First(x => x.Item.StartsWith("permission")).Items.Count());
+            Assert.AreEqual(4, data.First(x => x.Key.StartsWith("timeout")).ToList().Count());
+            Assert.AreEqual(3, data.First(x => x.Key.StartsWith("permission")).ToList().Count());
         }
 
         [TestMethod]
@@ -169,7 +169,7 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var group = messages.GroupBy(new LevenshteinDistanceOptions(5));
             Assert.AreEqual(1, group.Count());
-            Debug.Print(group.First().Item);
+            Debug.Print(group.First().Key);
         }
 
         [TestMethod]
@@ -184,7 +184,7 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0, removeAllDigits: true));
             Assert.AreEqual(1, data.Count());
-            Debug.Print(data.First().Item);
+            Debug.Print(data.First().Key);
         }
 
         [TestMethod]
@@ -199,7 +199,7 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0, removeAllDigits: true));
             Assert.AreEqual(1, data.Count());
-            Debug.Print(data.First().Item);
+            Debug.Print(data.First().Key);
         }
 
         [TestMethod]
@@ -215,7 +215,7 @@ namespace System.Linq.LevenshteinDistance.Tests
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0,
                 removeStandardFormattedGuid: true));
             Assert.AreEqual(1, data.Count());
-            Debug.Print(data.First().Item);
+            Debug.Print(data.First().Key);
         }
 
         [TestMethod]
