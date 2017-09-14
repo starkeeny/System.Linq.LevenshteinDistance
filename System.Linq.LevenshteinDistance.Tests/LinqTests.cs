@@ -147,11 +147,17 @@ namespace System.Linq.LevenshteinDistance.Tests
         {
             var messages = new List<string>();
             CancellationTokenSource source10 = new CancellationTokenSource(TimeSpan.FromMilliseconds(10));
-            CancellationTokenSource source40 = new CancellationTokenSource(TimeSpan.FromMilliseconds(40));
+            CancellationTokenSource source40 = new CancellationTokenSource(TimeSpan.FromMilliseconds(20));
 
             try
             {
-                Task.Run(() => Threading.Thread.Sleep(10000), source10.Token).Wait();
+                Task.Run(() => {
+                        for (int i = 0; i < 100; i++)
+                        {
+                            Threading.Thread.Sleep(TimeSpan.FromMilliseconds(10));
+                            source10.Token.ThrowIfCancellationRequested();
+                        }
+                    }, source10.Token).Wait();
             }
             catch (Exception exc)
             {
@@ -160,7 +166,13 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             try
             {
-                Task.Run(() => Threading.Thread.Sleep(10000), source40.Token).Wait();
+                Task.Run(() => {
+                    for (int i = 0; i < 100; i++)
+                    {
+                        Threading.Thread.Sleep(TimeSpan.FromMilliseconds(10));
+                        source40.Token.ThrowIfCancellationRequested();
+                    }
+                }, source40.Token).Wait();
             }
             catch (Exception exc)
             {
@@ -168,6 +180,7 @@ namespace System.Linq.LevenshteinDistance.Tests
             }
 
             var group = messages.GroupBy(new LevenshteinDistanceOptions(5));
+            Assert.AreEqual(2, messages.Count());
             Assert.AreEqual(1, group.Count());
             Debug.Print(group.First().Key);
         }
@@ -230,6 +243,40 @@ namespace System.Linq.LevenshteinDistance.Tests
 
             var data = rawData.GroupBy(new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0,
                 removeStandardFormattedGuid: true, removeAllDigits: true));
+            Assert.AreEqual(1, data.Count());
+        }
+
+        [TestMethod]
+        public void GroupByWithSelector()
+        {
+            var rawData = new string[] {
+                $"atimeout for client {Guid.NewGuid()} on server 1",
+                $"btimeout for client {Guid.NewGuid()} on server 2",
+                $"ctimeout for client {Guid.NewGuid()} on server 1",
+                $"dtimeout for client {Guid.NewGuid()} on server 2",
+            };
+
+            var data = rawData.GroupBy(
+                new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0, true, true),
+                x => x.Substring(1));
+            Assert.AreEqual(1, data.Count());
+        }
+
+        [TestMethod]
+        public void GroupByWithKeyElementAndResultSelector()
+        {
+            var rawData = new string[] {
+                $"atimeout for client {Guid.NewGuid()} on server 1",
+                $"btimeout FOR CLIENT {Guid.NewGuid()} on server 1",
+                $"ctimeout for client {Guid.NewGuid()} on server 1",
+                $"dtimeout for client {Guid.NewGuid()} on server 1",
+            };
+
+            var data = rawData.GroupBy(
+                new LevenshteinDistanceOptions(LevenshteinDistanceUnit.Absolute, 0, true, true),
+                x => x.Substring(1).ToLower(),
+                x => x.ToUpper(),
+                (key, items) => key);
             Assert.AreEqual(1, data.Count());
         }
     }

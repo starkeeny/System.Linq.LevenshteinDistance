@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>System.Linq.LevenshteinDistance</id>
+    <version>0.99.0.0-beta</version>
+    <title>System.Linq.LevenshteinDistance</title>
+    <authors>Daniel Kienb&#xf6;ck</authors>
+    <owners>Daniel Kienb&#xf6;ck</owners>
+    <licenseUrl>https://raw.githubusercontent.com/starkeeny/System.Linq.LevenshteinDistance/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/starkeeny/System.Linq.LevenshteinDistance</projectUrl>
+    <iconUrl></iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Groups strings based on their edit distance (Levenshtein Distance).</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Daniel Kienb&#xf6;ck 2017</copyright>
+    <tags>linq extension levenshtein string tolerance distance edit-distance</tags>
+  </metadata>
+</package>

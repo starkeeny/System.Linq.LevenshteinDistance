@@ -90,17 +90,34 @@ namespace System.Linq.LevenshteinDistance
         /// </summary>
         public IEnumerable<TElement> Items { get; internal set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LevenshteinDistanceGroupByResult{TElement}"/> class.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="items">The items.</param>
         public LevenshteinDistanceGroupByResult(string key, IEnumerable<TElement> items)
         {
             this.Key = key;
             this.Items = items;
         }
 
+        /// <summary>
+        /// Returns an enumerator for the items list..
+        /// </summary>
+        /// <returns>
+        /// An enumerator which can be used to iterate the items.
+        /// </returns>
         public IEnumerator<TElement> GetEnumerator()
         {
             return ((IEnumerable<TElement>)Items).GetEnumerator();
         }
 
+        /// <summary>
+        /// Returns an enumerator for the items list..
+        /// </summary>
+        /// <returns>
+        /// An enumerator which can be used to iterate the items.
+        /// </returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IEnumerable)Items).GetEnumerator();
@@ -112,6 +129,15 @@ namespace System.Linq.LevenshteinDistance
     /// </summary>
     public static class LevenshteinDistanceLinqExtension
     {
+        /// <summary>
+        /// Groups the elements of a string sequence similar to the already existing GroupBy functions in linq
+        /// but here you can configure a tolerance which is measured in Levenshtein Distance (LD).
+        /// <see cref="GroupBy{TSource, TElement, TResult}(IEnumerable{TSource}, LevenshteinDistanceOptions, Func{TSource, string}, Func{TSource, TElement}, Func{string, IEnumerable{TElement}, TResult})"/>
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="options">The options.</param>
+        /// <returns>A list of keys with its list of corresponding elements.</returns>
         public static IEnumerable<IGrouping<string, TSource>> GroupBy<TSource>(
             this IEnumerable<TSource> source, 
             LevenshteinDistanceOptions options)
@@ -124,6 +150,16 @@ namespace System.Linq.LevenshteinDistance
                 resultSelector: (key, elements) => new LevenshteinDistanceGroupByResult<TSource>(key, elements));
         }
 
+        /// <summary>
+        /// Groups the elements of a string sequence similar to the already existing GroupBy functions in linq
+        /// but here you can configure a tolerance which is measured in Levenshtein Distance (LD).
+        /// <see cref="GroupBy{TSource, TElement, TResult}(IEnumerable{TSource}, LevenshteinDistanceOptions, Func{TSource, string}, Func{TSource, TElement}, Func{string, IEnumerable{TElement}, TResult})"/>
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="keySelector">The key selector.</param>
+        /// <returns>A list of keys with its list of corresponding elements.</returns>
         public static IEnumerable<IGrouping<string, TSource>> GroupBy<TSource>(
             this IEnumerable<TSource> source, 
             LevenshteinDistanceOptions options, 
@@ -137,6 +173,18 @@ namespace System.Linq.LevenshteinDistance
                 resultSelector: (key, elements) => new LevenshteinDistanceGroupByResult<TSource>(key, elements));
         }
 
+        /// <summary>
+        /// Groups the elements of a string sequence similar to the already existing GroupBy functions in linq
+        /// but here you can configure a tolerance which is measured in Levenshtein Distance (LD).
+        /// <see cref="GroupBy{TSource, TElement, TResult}(IEnumerable{TSource}, LevenshteinDistanceOptions, Func{TSource, string}, Func{TSource, TElement}, Func{string, IEnumerable{TElement}, TResult})"/>
+        /// </summary>
+        /// <typeparam name="TSource">The type of the source.</typeparam>
+        /// <typeparam name="TElement">The type of the element.</typeparam>
+        /// <param name="source">The source.</param>
+        /// <param name="options">The options.</param>
+        /// <param name="keySelector">The key selector.</param>
+        /// <param name="elementSelector">The element selector.</param>
+        /// <returns>A list of keys with its list of corresponding elements.</returns>
         public static IEnumerable<IGrouping<string, TElement>> GroupBy<TSource, TElement>(
             this IEnumerable<TSource> source,
             LevenshteinDistanceOptions options,
@@ -171,8 +219,9 @@ namespace System.Linq.LevenshteinDistance
         /// <param name="source">The list to group.</param>
         /// <param name="options">The grouping-options.</param>
         /// <param name="keySelector">Function to extract a key.</param>
-        /// <param name="elementSelector"></param>
-        /// <returns></returns>
+        /// <param name="elementSelector">Function to extract an element.</param>
+        /// <param name="resultSelector">Function to extract a result.</param>
+        /// <returns>A list of items based on the result of the resultSelector</returns>
         public static IEnumerable<TResult> GroupBy<TSource, TElement, TResult>(
             this IEnumerable<TSource> source, 
             LevenshteinDistanceOptions options, 
@@ -367,6 +416,13 @@ namespace System.Linq.LevenshteinDistance
             return data;
         }
 
+        /// <summary>
+        /// Calculates the work array distances.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        /// <param name="a">The first string.</param>
+        /// <param name="b">The second string.</param>
+        /// <returns>The whole matrix of the LD calculation.</returns>
         private static int[,] CalculateWorkArrayDistances(int[,] data, string a, string b)
         {
             for (int i = 1; i <= data.GetUpperBound(0); i++)
