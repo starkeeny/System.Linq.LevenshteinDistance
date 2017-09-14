@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/starkeeny/System.Linq.LevenshteinDistance.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>linq extension levenshtein string tolerance distance edit-distance</PackageTags>
+    <Version>0.99.0.0-beta</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
